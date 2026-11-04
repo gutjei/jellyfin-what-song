@@ -2,7 +2,7 @@
 
 Pause a movie or TV episode in Jellyfin Web to see the song playing in that scene. The overlay reads a timeline stored beside the video. It updates when you seek while paused and disappears when playback resumes.
 
-**Compatibility** · Jellyfin Server and Web 10.11.11, using the browser’s built-in HTML video player. The plugin appears as **Song Pause** in the Jellyfin dashboard.
+**Compatibility** · Jellyfin Server and Web 10.11.11, using the browser’s built-in HTML video player or Jellyfin Media Player 1.12 with its MPV player. The plugin appears as **Song Pause** in the Jellyfin dashboard.
 
 [Инструкция на русском](README.ru.md)
 
@@ -17,7 +17,11 @@ Pause a movie or TV episode in Jellyfin Web to see the song playing in that scen
 2. Open **Catalog**, install **Song Pause**, and restart Jellyfin.
 3. Reload Jellyfin Web. Add a timeline beside a video and pause playback. The plugin registers its overlay when the server serves the bundled web client.
 
-**Offline installation.** Extract the DLL from the [1.1.0.0 package](packages/SongPause_1.1.0.0.zip) into `SongPause_1.1.0.0` under the server's plugins directory and restart. Uninstall through the plugin dashboard. If you added Song Pause to `index.html` and `config.json` manually for version 1.0, you can remove those entries.
+**Offline installation.** Extract the DLL from the [1.2.0.0 package](packages/SongPause_1.2.0.0.zip) into `SongPause_1.2.0.0` under the server's plugins directory and restart. Uninstall through the plugin dashboard. If you added Song Pause to `index.html` and `config.json` manually for version 1.0, you can remove those entries.
+
+## Jellyfin Media Player
+
+Use the web client provided by your Jellyfin server. If your desktop app uses a bundled web client, launch it with `--force-external-webclient`. Restart the app after updating the server plugin so it loads the new script. The song card appears over MPV video when paused and updates when you seek while paused.
 
 ## Add songs to a video
 

@@ -13,6 +13,10 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '9.0.x'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --test tests/song-pause.test.cjs
       - run: dotnet publish Jellyfin.Plugin.SongPause.csproj -c Release -o dist
       - uses: actions/upload-artifact@v4
         with:

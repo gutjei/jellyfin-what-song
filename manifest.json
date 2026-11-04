@@ -8,6 +8,14 @@
     "description": "Shows songs from a .songs.json timeline in Jellyfin Web.",
     "versions": [
       {
+        "version": "1.2.0.0",
+        "targetAbi": "10.11.11.0",
+        "checksum": "5fcfab48bff86e238b0586cf4fa7e2fa",
+        "sourceUrl": "https://raw.githubusercontent.com/gutjei/jellyfin-what-song/main/packages/SongPause_1.2.0.0.zip",
+        "timestamp": "2026-11-04T20:16:10Z",
+        "changelog": "Support the native MPV player in Jellyfin Media Player: pause, paused seeking, resume, stop and player switching."
+      },
+      {
         "version": "1.1.0.0",
         "targetAbi": "10.11.11.0",
         "checksum": "57c9508e23882736631e52f148bbd7db",
