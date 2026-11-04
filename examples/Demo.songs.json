@@ -1,0 +1,7 @@
+{
+  "version": 1,
+  "songs": [
+    { "startMs": 5000, "endMs": 20000, "artist": "Тихий берег", "title": "Первый снег" },
+    { "startMs": 18500, "endMs": 32000, "title": "Тема вокзала" }
+  ]
+}
