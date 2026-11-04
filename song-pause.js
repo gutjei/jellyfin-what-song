@@ -42,14 +42,32 @@ window.SongPause = () => class SongPause {
                 const songs = await api.ajax({
                     type: 'GET',
                     dataType: 'json',
-                    url: api.getUrl('SongPause/' + encodeURIComponent(sourceId) + '/songs', { positionMs })
+                    url: api.getUrl('SongPause/' + encodeURIComponent(sourceId) + '/songs', { positionMs, details: true })
                 });
                 if (request !== generation || player !== playbackManager.getCurrentPlayer() || !player.paused() || !songs.length) return;
                 if (video && (!video.isConnected || video.seeking || !video.paused)) return;
                 panel = document.createElement('aside');
                 panel.setAttribute('role', 'status');
-                panel.style.cssText = 'position:fixed;left:5vw;bottom:24vh;z-index:100000;pointer-events:none;background:#141414ed;color:white;padding:.7em 1em;border-radius:.55em;max-width:80vw;white-space:pre-line;overflow-wrap:anywhere;font:600 clamp(16px,2vw,28px)/1.4 sans-serif';
-                panel.textContent = '♫  ' + songs.join('\n♫  ');
+                panel.style.cssText = 'position:fixed;top:max(5.5em,7vh);right:clamp(16px,3vw,64px);width:clamp(240px,27vw,420px);max-width:calc(100vw - 32px);max-height:65vh;overflow:hidden;box-sizing:border-box;z-index:100000;pointer-events:none;color:#fff;font:400 clamp(14px,1.15vw,20px)/1.4 sans-serif;overflow-wrap:anywhere';
+                const heading = document.createElement('div');
+                heading.textContent = 'Сейчас играет';
+                heading.style.cssText = 'font-weight:600;margin-bottom:.5em;text-shadow:0 1px 4px #000';
+                panel.append(heading);
+                for (const song of songs) {
+                    const card = document.createElement('div');
+                    card.style.cssText = 'background:rgba(28,28,28,.92);padding:.9em 1.1em;border-radius:.65em;margin-bottom:.5em;box-shadow:0 4px 18px #0003';
+                    const title = document.createElement('div');
+                    title.textContent = song.title;
+                    title.style.fontWeight = '600';
+                    card.append(title);
+                    if (song.artist) {
+                        const artist = document.createElement('div');
+                        artist.textContent = song.artist;
+                        artist.style.cssText = 'color:#b8b8b8;font-size:.9em;margin-top:.2em';
+                        card.append(artist);
+                    }
+                    panel.append(card);
+                }
                 (document.fullscreenElement || document.body).append(panel);
             } catch (error) {
                 nativePosition = undefined;

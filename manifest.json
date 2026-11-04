@@ -8,6 +8,14 @@
     "description": "Shows songs from a .songs.json timeline in Jellyfin Web.",
     "versions": [
       {
+        "version": "1.2.1.0",
+        "targetAbi": "10.11.11.0",
+        "checksum": "6b916eeb84a16aedd27a075d38414035",
+        "sourceUrl": "https://raw.githubusercontent.com/gutjei/jellyfin-what-song/main/packages/SongPause_1.2.1.0.zip",
+        "timestamp": "2026-11-04T20:28:23Z",
+        "changelog": "Move the song card to the top right, with separate title and artist lines."
+      },
+      {
         "version": "1.2.0.0",
         "targetAbi": "10.11.11.0",
         "checksum": "5fcfab48bff86e238b0586cf4fa7e2fa",

@@ -20,7 +20,13 @@ function setup() {
     const document = {
         addEventListener() {},
         createElement() {
-            return { style: {}, setAttribute() {}, remove() { panels.delete(this); } };
+            return {
+                style: {}, children: [], setAttribute() {},
+                append(child) { this.children.push(child); },
+                get textContent() { return this.text ?? this.children.map(child => child.textContent).join(''); },
+                set textContent(value) { this.text = value; },
+                remove() { panels.delete(this); }
+            };
         },
         body: { append(panel) { panels.add(panel); } }
     };
@@ -60,13 +66,13 @@ function setup() {
 test('MPV pause and paused seek render a song without an HTML video', async () => {
     const app = setup();
     app.pause();
-    assert.deepEqual(app.requests[0], { route: 'SongPause/edition/songs', positionMs: 10000 });
-    await app.reply(['First']);
-    assert.equal([...app.panels][0].textContent, '♫  First');
+    assert.deepEqual(app.requests[0], { route: 'SongPause/edition/songs', positionMs: 10000, details: true });
+    await app.reply([{ title: 'First', artist: 'Artist' }]);
+    assert.equal([...app.panels][0].textContent, 'Сейчас играетFirstArtist');
     app.seek(19000);
     assert.equal(app.requests[1].positionMs, 19000);
-    await app.reply(['Second']);
-    assert.equal([...app.panels][0].textContent, '♫  Second');
+    await app.reply([{ title: 'Second' }]);
+    assert.equal([...app.panels][0].textContent, 'Сейчас играетSecond');
     app.event('timeupdate');
     assert.equal(app.requests.length, 2);
     app.resume();
@@ -90,6 +96,6 @@ test('repeated player binding removes old MPV listeners', async () => {
     app.rebind();
     app.pause();
     assert.equal(app.requests.length, 1);
-    await app.reply(['Song']);
+    await app.reply([{ title: 'Song' }]);
     assert.equal(app.panels.size, 1);
 });

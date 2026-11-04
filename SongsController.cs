@@ -20,7 +20,7 @@ public sealed class SongsController(ILibraryManager library, IUserManager users,
     [Authorize]
     [HttpGet("{sourceId:guid}/songs")]
     [ResponseCache(NoStore = true)]
-    public async Task<IActionResult> Songs(Guid sourceId, [FromQuery] long? positionMs, CancellationToken cancellationToken)
+    public async Task<IActionResult> Songs(Guid sourceId, [FromQuery] long? positionMs, [FromQuery] bool details, CancellationToken cancellationToken)
     {
         if (sourceId == Guid.Empty || positionMs is null or < 0)
             return BadRequest();
@@ -38,7 +38,8 @@ public sealed class SongsController(ILibraryManager library, IUserManager users,
             if (stream.Length > 1024 * 1024)
                 throw new InvalidDataException("Timeline exceeds 1 MiB.");
             var songs = await SongTimeline.At(stream, positionMs.Value, cancellationToken);
-            return Ok(songs);
+            return details ? Ok(songs) : Ok(songs.Select(song =>
+                string.IsNullOrWhiteSpace(song.Artist) ? song.Title : $"{song.Artist} — {song.Title}"));
         }
         catch (Exception e) when (e is FileNotFoundException or DirectoryNotFoundException)
         {
