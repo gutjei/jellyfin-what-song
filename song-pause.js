@@ -48,7 +48,7 @@ window.SongPause = () => class SongPause {
                 if (video && (!video.isConnected || video.seeking || !video.paused)) return;
                 panel = document.createElement('aside');
                 panel.setAttribute('role', 'status');
-                panel.style.cssText = 'position:fixed;top:max(5.5em,7vh);right:clamp(16px,3vw,64px);width:clamp(240px,27vw,420px);max-width:calc(100vw - 32px);max-height:65vh;overflow:hidden;box-sizing:border-box;z-index:100000;pointer-events:none;color:#fff;font:400 clamp(14px,1.15vw,20px)/1.4 sans-serif;overflow-wrap:anywhere';
+                panel.style.cssText = 'position:fixed;top:clamp(48px,5vh,72px);right:clamp(16px,3vw,64px);width:max-content;max-width:min(clamp(360px,40.5vw,630px),calc(100vw - 32px));max-height:65vh;overflow:hidden;box-sizing:border-box;z-index:100000;pointer-events:none;color:#fff;font:400 clamp(14px,1.15vw,20px)/1.4 sans-serif;overflow-wrap:anywhere';
                 const heading = document.createElement('div');
                 heading.textContent = 'Сейчас играет';
                 heading.style.cssText = 'font-weight:600;margin-bottom:.5em;text-shadow:0 1px 4px #000';

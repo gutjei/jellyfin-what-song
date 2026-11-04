@@ -8,6 +8,14 @@
     "description": "Shows songs from a .songs.json timeline in Jellyfin Web.",
     "versions": [
       {
+        "version": "1.2.2.0",
+        "targetAbi": "10.11.11.0",
+        "checksum": "c4abeb460ec7041a7d57cd3ea58145bb",
+        "sourceUrl": "https://raw.githubusercontent.com/gutjei/jellyfin-what-song/main/packages/SongPause_1.2.2.0.zip",
+        "timestamp": "2026-11-04T20:44:28Z",
+        "changelog": "Raise the song card below the player toolbar. Fit its width to the text, with a maximum of 250 percent of the approved narrow card width and wrapping beyond that limit."
+      },
+      {
         "version": "1.2.1.0",
         "targetAbi": "10.11.11.0",
         "checksum": "6b916eeb84a16aedd27a075d38414035",

@@ -17,7 +17,7 @@ Pause a movie or TV episode in Jellyfin Web to see the song playing in that scen
 2. Open **Catalog**, install **Song Pause**, and restart Jellyfin.
 3. Reload Jellyfin Web. Add a timeline beside a video and pause playback. The plugin registers its overlay when the server serves the bundled web client.
 
-**Offline installation.** Extract the DLL from the [1.2.1.0 package](packages/SongPause_1.2.1.0.zip) into `SongPause_1.2.1.0` under the server's plugins directory and restart. Uninstall through the plugin dashboard. If you added Song Pause to `index.html` and `config.json` manually for version 1.0, you can remove those entries.
+**Offline installation.** Extract the DLL from the [1.2.2.0 package](packages/SongPause_1.2.2.0.zip) into `SongPause_1.2.2.0` under the server's plugins directory and restart. Uninstall through the plugin dashboard. If you added Song Pause to `index.html` and `config.json` manually for version 1.0, you can remove those entries.
 
 ## Jellyfin Media Player
 
