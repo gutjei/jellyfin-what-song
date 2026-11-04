@@ -1,0 +1,20 @@
+[
+  {
+    "guid": "7bd9d031-4b68-47c2-a04b-fb2e1987ae71",
+    "name": "Song Pause",
+    "owner": "gutjei",
+    "category": "General",
+    "overview": "See which song is playing when you pause a movie or TV episode.",
+    "description": "Shows songs from a .songs.json timeline in Jellyfin Web.",
+    "versions": [
+      {
+        "version": "1.1.0.0",
+        "targetAbi": "10.11.11.0",
+        "checksum": "57c9508e23882736631e52f148bbd7db",
+        "sourceUrl": "https://raw.githubusercontent.com/gutjei/jellyfin-what-song/main/packages/SongPause_1.1.0.0.zip",
+        "timestamp": "2026-11-04T19:58:11Z",
+        "changelog": "Install from the Jellyfin catalog. Automatically load the pause overlay in Jellyfin Web."
+      }
+    ]
+  }
+]
