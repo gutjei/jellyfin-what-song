@@ -19,9 +19,9 @@ Pause a movie or TV episode in Jellyfin Web to see the song playing in that scen
 2. Open **Catalog**, install **Song Pause**, and restart Jellyfin.
 3. Reload Jellyfin Web. Add a timeline beside a video and pause playback. The plugin registers its overlay when the server serves the bundled web client.
 
-**Development build (1.3.0.0).** Download the `SongPause` artifact from a successful [Build workflow](https://github.com/gutjei/jellyfin-what-song/actions/workflows/build.yml) run, or build locally and run `python tools/package.py`. The ZIP is generated in `dist/`; it is not stored in Git. The plugin catalog remains on the last published release until the new release asset is uploaded and its catalog entry is published.
+**Development build (1.3.0.1).** Download the `SongPause` artifact from a successful [Build workflow](https://github.com/gutjei/jellyfin-what-song/actions/workflows/build.yml) run, or build locally and run `python tools/package.py`. The ZIP is generated in `dist/`; it is not stored in Git. The plugin catalog remains on the last published release until the new release asset is uploaded and its catalog entry is published.
 
-**Offline installation.** Extract the DLL from `SongPause_1.3.0.0.zip` into `SongPause_1.3.0.0` under the server's plugins directory and restart. Uninstall through the plugin dashboard. If you added Song Pause to `index.html` and `config.json` manually for version 1.0, you can remove those entries.
+**Offline installation.** Extract the DLL from `SongPause_1.3.0.1.zip` into `SongPause_1.3.0.1` under the server's plugins directory and restart. Uninstall through the plugin dashboard. If you added Song Pause to `index.html` and `config.json` manually for version 1.0, you can remove those entries.
 
 ## Jellyfin Media Player
 
@@ -66,8 +66,8 @@ The pause interaction was inspired by [JRay](https://gitea.tourolle.paris/dtouro
 Commit the four-part version in the project file to main, then push a matching tag.
 
 ```sh
-git tag v1.3.0.0
-git push origin v1.3.0.0
+git tag v1.3.0.1
+git push origin v1.3.0.1
 ```
 
 The Release workflow runs the tests, builds the DLL, packages it, and publishes the ZIP in GitHub Releases. It downloads the public asset and compares it with the build output before committing its entry to the root manifest. Existing catalog entries are retained. Re-running a release verifies an existing asset before continuing. Branch protection must allow the workflow's GitHub token to update manifest.json on main.
