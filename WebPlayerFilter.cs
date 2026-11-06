@@ -13,7 +13,11 @@ namespace Jellyfin.Plugin.SongPause;
 public sealed class ServiceRegistrator : IPluginServiceRegistrator
 {
     public void RegisterServices(IServiceCollection services, IServerApplicationHost applicationHost)
-        => services.AddSingleton<IStartupFilter, WebPlayerFilter>();
+    {
+        services.AddSingleton<IStartupFilter, WebPlayerFilter>();
+        services.AddSingleton<WebClientRegistry>();
+        services.AddHostedService<SessionSongNotifier>();
+    }
 }
 
 internal sealed class WebPlayerFilter : IStartupFilter

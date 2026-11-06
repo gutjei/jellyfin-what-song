@@ -7,6 +7,21 @@ window.SongPause = () => class SongPause {
         let panel;
         let nativePlayer;
         let nativePosition;
+        const playerEvents = ['pause', 'timeupdate', 'playing', 'unpause', 'seeked'];
+
+        function registerWebClient() {
+            try {
+                const player = playbackManager.getCurrentPlayer();
+                if (!player?.isLocalPlayer) return;
+                const item = playbackManager.getPlayerState(player)?.NowPlayingItem;
+                if (!item?.ServerId) return;
+                const api = ServerConnections.getApiClient(item.ServerId);
+                Promise.resolve(api.ajax({ type: 'POST', url: api.getUrl('SongPause/web-client') }))
+                    .catch(error => console.debug('Song Pause registration:', error));
+            } catch (error) {
+                console.debug('Song Pause registration:', error);
+            }
+        }
 
         function clear() {
             generation++;
@@ -16,6 +31,7 @@ window.SongPause = () => class SongPause {
         }
 
         async function show(video) {
+            let request;
             const player = playbackManager.getCurrentPlayer();
             if (!player?.isLocalPlayer || (video && (!video.paused || video.ended || video.seeking || !video.isConnected))) {
                 clear();
@@ -32,19 +48,20 @@ window.SongPause = () => class SongPause {
                 // The HTML video clock updates before Jellyfin's cached clock on seek.
                 const offsetMs = video ? (state.PositionTicks - Math.floor(player.currentTime() * 10000)) / 10000 : 0;
                 const positionMs = Math.floor(video ? video.currentTime * 1000 + offsetMs : state.PositionTicks / 10000);
-                if (!sourceId || !Number.isSafeInteger(positionMs) || positionMs < 0) return;
+                if (!sourceId || !Number.isSafeInteger(positionMs) || positionMs < 0) { clear(); return; }
                 const position = sourceId + '/' + positionMs;
-                if (!video && nativePosition === position) return;
+                if (nativePosition === position) return;
                 clear();
-                if (!video) nativePosition = position;
-                const request = generation;
+                nativePosition = position;
+                request = generation;
                 const api = ServerConnections.getApiClient(item.ServerId);
                 const songs = await api.ajax({
                     type: 'GET',
                     dataType: 'json',
                     url: api.getUrl('SongPause/' + encodeURIComponent(sourceId) + '/songs', { positionMs, details: true })
                 });
-                if (request !== generation || player !== playbackManager.getCurrentPlayer() || !player.paused() || !songs.length) return;
+                if (request !== generation || player !== playbackManager.getCurrentPlayer()
+                    || !playbackManager.getPlayerState(player)?.PlayState?.IsPaused || !songs.length) return;
                 if (video && (!video.isConnected || video.seeking || !video.paused)) return;
                 panel = document.createElement('aside');
                 panel.setAttribute('role', 'status');
@@ -70,38 +87,48 @@ window.SongPause = () => class SongPause {
                 }
                 (document.fullscreenElement || document.body).append(panel);
             } catch (error) {
-                nativePosition = undefined;
+                if (request === generation) nativePosition = undefined;
                 console.debug('Song Pause:', error);
             }
         }
 
-        // MPV reports events through Jellyfin's event bus and has no HTML video.
+        // All local player adapters use Jellyfin's event bus, regardless of engine.
         function nativeUpdate() {
-            if (nativePlayer?.paused()) void show();
-            else clear();
+            if (!nativePlayer || nativePlayer !== playbackManager.getCurrentPlayer()) return;
+            // A hidden HTML video may remain mounted while a native engine is active.
+            // Bus events use the active player's clock; DOM seeks pass their own video.
+            void show();
         }
 
-        function bindNativePlayer() {
+        function unbindNativePlayer() {
             clear();
             if (nativePlayer) {
-                for (const event of ['pause', 'timeupdate', 'playing', 'unpause']) {
+                for (const event of playerEvents) {
                     events.off(nativePlayer, event, nativeUpdate);
                 }
                 events.off(nativePlayer, 'stopped', onStop);
+                events.off(nativePlayer, 'seeking', clear);
             }
+            nativePlayer = undefined;
+        }
+
+        function bindNativePlayer() {
+            unbindNativePlayer();
             const player = playbackManager.getCurrentPlayer();
-            nativePlayer = player?.id === 'mpvvideoplayer' ? player : undefined;
+            nativePlayer = player?.isLocalPlayer ? player : undefined;
             if (nativePlayer) {
-                for (const event of ['pause', 'timeupdate', 'playing', 'unpause']) {
+                registerWebClient();
+                for (const event of playerEvents) {
                     events.on(nativePlayer, event, nativeUpdate);
                 }
                 events.on(nativePlayer, 'stopped', onStop);
+                events.on(nativePlayer, 'seeking', clear);
                 nativeUpdate();
             }
         }
 
         function onStop() {
-            clear();
+            unbindNativePlayer();
         }
 
         for (const event of ['pause', 'seeked', 'play', 'playing', 'seeking', 'ended', 'emptied']) {
@@ -111,11 +138,12 @@ window.SongPause = () => class SongPause {
                 else clear();
             }, true);
         }
-        events.on(playbackManager, 'playbackstop', clear);
+        events.on(playbackManager, 'playbackstop', unbindNativePlayer);
         events.on(playbackManager, 'playerchange', bindNativePlayer);
         events.on(playbackManager, 'playbackstart', bindNativePlayer);
-        window.addEventListener('pagehide', clear);
+        window.addEventListener('pagehide', unbindNativePlayer);
         window.addEventListener('hashchange', clear);
+        window.setInterval(registerWebClient, 30000);
         bindNativePlayer();
     }
 };
