@@ -61,6 +61,15 @@ For native-client troubleshooting, check the session's `SupportedCommands` for `
 The output is `dist/Jellyfin.Plugin.SongPause.dll`. It includes the browser script. The server resolves the video path from the signed-in user’s library and reads the timeline on demand.
 
 The pause interaction was inspired by [JRay](https://gitea.tourolle.paris/dtourolle/jRay/src/branch/master/README.md), which displays the actors in a scene.
-## Package a catalog update
+## Publish a release
 
-Increment the four-part project version, publish the DLL, then run `python tools/package.py "Release notes"`. This writes the ZIP and a candidate `manifest.json` to ignored `dist/`, leaving the published root catalog unchanged. Upload the ZIP as a GitHub Release asset under tag `v<version>`, verify its download URL and checksum, then copy `dist/manifest.json` to the root and commit only that catalog. Do not commit ZIPs, DLLs or build outputs. Legacy catalog URLs are pinned to the historical commit containing the old ZIPs, so removing them from the current tree does not break existing installations.
+Commit the four-part version in the project file to main, then push a matching tag.
+
+```sh
+git tag v1.3.0.0
+git push origin v1.3.0.0
+```
+
+The Release workflow runs the tests, builds the DLL, packages it, and publishes the ZIP in GitHub Releases. It downloads the public asset and compares it with the build output before committing its entry to the root manifest. Existing catalog entries are retained. Re-running a release verifies an existing asset before continuing. Branch protection must allow the workflow's GitHub token to update manifest.json on main.
+
+For local package inspection, run `python tools/package.py "Release notes"` after publishing the DLL. The resulting ZIP and candidate catalog are written under ignored `dist/`.

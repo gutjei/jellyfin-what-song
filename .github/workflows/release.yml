@@ -1,0 +1,75 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: plugin-release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Validate release tag
+        shell: bash
+        run: |
+          VERSION=$(python -c "import xml.etree.ElementTree as E; print(E.parse('Jellyfin.Plugin.SongPause.csproj').findtext('.//Version'))")
+          [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]
+          test "$GITHUB_REF_NAME" = "v$VERSION"
+          git merge-base --is-ancestor HEAD origin/main
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+          echo "PACKAGE=SongPause_${VERSION}.zip" >> "$GITHUB_ENV"
+      - run: node --test tests/song-pause.test.cjs
+      - run: dotnet test tests/SongPause.Tests.csproj -c Release
+      - run: dotnet publish Jellyfin.Plugin.SongPause.csproj -c Release -o dist
+      - run: python tools/package.py "Release $VERSION"
+      - name: Publish and verify release asset
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          if ! gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            gh release create "$GITHUB_REF_NAME" --verify-tag --draft --title "Song Pause $VERSION" --generate-notes
+          fi
+          mkdir -p dist/downloaded
+          if gh release download "$GITHUB_REF_NAME" --pattern "$PACKAGE" --dir dist/downloaded; then
+            cmp "dist/$PACKAGE" "dist/downloaded/$PACKAGE"
+          else
+            gh release upload "$GITHUB_REF_NAME" "dist/$PACKAGE"
+          fi
+          gh release edit "$GITHUB_REF_NAME" --draft=false
+          curl --fail --location --retry 5 --retry-all-errors \
+            "https://github.com/$GITHUB_REPOSITORY/releases/download/$GITHUB_REF_NAME/$PACKAGE" \
+            --output "dist/downloaded/public.zip"
+          cmp "dist/$PACKAGE" dist/downloaded/public.zip
+      - name: Update plugin catalog
+        shell: bash
+        run: |
+          git fetch origin main
+          git checkout -B main origin/main
+          python tools/update_catalog.py dist/manifest.json "$VERSION"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add manifest.json
+          if ! git diff --cached --quiet; then
+            git commit -m "Publish Song Pause $VERSION in the plugin catalog"
+            git push origin HEAD:main
+          fi
