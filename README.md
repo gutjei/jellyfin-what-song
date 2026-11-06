@@ -2,7 +2,9 @@
 
 Pause a movie or TV episode in Jellyfin Web to see the song playing in that scene. The overlay reads a timeline stored beside the video. It updates when you seek while paused and disappears when playback resumes.
 
-**Compatibility** · Jellyfin Server and Web 10.11.11, using the browser’s built-in HTML video player or Jellyfin Media Player 1.12 with its MPV player. The plugin appears as **Song Pause** in the Jellyfin dashboard.
+**Compatibility** · Jellyfin Server and Web 10.11.11. Web overlays use Jellyfin's local player events without an MPV/VLC name whitelist. Native clients receive a standard `DisplayMessage` if they report pause/position and support remote messages over a working WebSocket. Android TV renders a short toast, not a persistent overlay; its duration and appearance belong to the client, and the protocol has no dismiss command. The plugin appears as **Song Pause** in the Jellyfin dashboard.
+
+**External Android players:** launching VLC/MPV as a separate app through an Android Intent does not report intermediate pauses/seeks to Jellyfin. The stock Android TV client reports the result after returning from the external player. Pause overlays in this scenario require player/client integration; a server plugin alone cannot provide them. An embedded playback engine is a different scenario from a separate application. Android TV behavior was checked against upstream source, not a physical TV.
 
 [Инструкция на русском](README.ru.md)
 
@@ -17,7 +19,9 @@ Pause a movie or TV episode in Jellyfin Web to see the song playing in that scen
 2. Open **Catalog**, install **Song Pause**, and restart Jellyfin.
 3. Reload Jellyfin Web. Add a timeline beside a video and pause playback. The plugin registers its overlay when the server serves the bundled web client.
 
-**Offline installation.** Extract the DLL from the [1.2.2.0 package](packages/SongPause_1.2.2.0.zip) into `SongPause_1.2.2.0` under the server's plugins directory and restart. Uninstall through the plugin dashboard. If you added Song Pause to `index.html` and `config.json` manually for version 1.0, you can remove those entries.
+**Development build (1.3.0.0).** Download the `SongPause` artifact from a successful [Build workflow](https://github.com/gutjei/jellyfin-what-song/actions/workflows/build.yml) run, or build locally and run `python tools/package.py`. The ZIP is generated in `dist/`; it is not stored in Git. The plugin catalog remains on the last published release until the new release asset is uploaded and its catalog entry is published.
+
+**Offline installation.** Extract the DLL from `SongPause_1.3.0.0.zip` into `SongPause_1.3.0.0` under the server's plugins directory and restart. Uninstall through the plugin dashboard. If you added Song Pause to `index.html` and `config.json` manually for version 1.0, you can remove those entries.
 
 ## Jellyfin Media Player
 
@@ -45,12 +49,18 @@ Times are integer milliseconds from the start of the video. The start is inclusi
 With the .NET 9 SDK installed, run from the repository root:
 
 ```sh
+node --test tests/song-pause.test.cjs
+dotnet test tests/SongPause.Tests.csproj -c Release
 dotnet publish Jellyfin.Plugin.SongPause.csproj -c Release -o dist
 ```
+
+Tests simulate the player and session contracts, including late responses, paused seeks, edition selection and isolated sessions. They do not run physical Android TV devices or external VLC/MPV applications. The web overlay renews a 90-second session lease every 30 seconds to suppress duplicate native notifications. Native notifications use real client progress, not Jellyfin's estimated automatic progress.
+
+For native-client troubleshooting, check the session's `SupportedCommands` for `DisplayMessage`, `SupportsRemoteControl=true`, and real pause/position reports. A debug log entry containing `cannot receive DisplayMessage` indicates missing messaging capability or a disconnected WebSocket.
 
 The output is `dist/Jellyfin.Plugin.SongPause.dll`. It includes the browser script. The server resolves the video path from the signed-in user’s library and reads the timeline on demand.
 
 The pause interaction was inspired by [JRay](https://gitea.tourolle.paris/dtourolle/jRay/src/branch/master/README.md), which displays the actors in a scene.
 ## Package a catalog update
 
-Increment the four-part project version, publish the DLL, then run `python tools/package.py "Release notes"`. Commit the new versioned ZIP and `manifest.json` together. Keep older ZIPs available for servers pinned to an earlier release.
+Increment the four-part project version, publish the DLL, then run `python tools/package.py "Release notes"`. This writes the ZIP and a candidate `manifest.json` to ignored `dist/`, leaving the published root catalog unchanged. Upload the ZIP as a GitHub Release asset under tag `v<version>`, verify its download URL and checksum, then copy `dist/manifest.json` to the root and commit only that catalog. Do not commit ZIPs, DLLs or build outputs. Legacy catalog URLs are pinned to the historical commit containing the old ZIPs, so removing them from the current tree does not break existing installations.

@@ -4,3 +4,12 @@ bin/
 obj/
 dist/
 *.user
+packages/
+*.zip
+*.dll
+*.pdb
+TestResults/
+__pycache__/
+*.pyc
+graphify-out/
+.test-tmp/

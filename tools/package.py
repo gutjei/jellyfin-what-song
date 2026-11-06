@@ -1,4 +1,4 @@
-"""Package the published DLL and update the Jellyfin plugin catalog."""
+"""Build a local ZIP and candidate catalog under dist; never modify the published catalog."""
 import hashlib
 import json
 from io import BytesIO
@@ -14,12 +14,12 @@ version = project.findtext(".//Version")
 abi = project.find(".//PackageReference[@Include='Jellyfin.Controller']").get("Version") + ".0"
 guid = "7bd9d031-4b68-47c2-a04b-fb2e1987ae71"
 dll = "Jellyfin.Plugin.SongPause.dll"
-package = root / "packages" / f"SongPause_{version}.zip"
+package = root / "dist" / f"SongPause_{version}.zip"
 manifest = root / "manifest.json"
 catalog = json.loads(manifest.read_text("utf-8")) if manifest.exists() else [{
     "guid": guid, "name": "Song Pause", "owner": "gutjei", "category": "General",
     "overview": "See which song is playing when you pause a movie or TV episode.",
-    "description": "Shows songs from a .songs.json timeline in Jellyfin Web.",
+    "description": "Shows songs from a .songs.json timeline in Jellyfin Web and sends pause notifications to compatible native clients.",
     "versions": []
 }]
 plugin, = catalog
@@ -39,10 +39,10 @@ if previous and previous["checksum"].lower() != checksum:
 if not previous:
     plugin["versions"].insert(0, {
         "version": version, "targetAbi": abi, "checksum": checksum,
-        "sourceUrl": "https://raw.githubusercontent.com/gutjei/jellyfin-what-song/main/packages/" + package.name,
+        "sourceUrl": f"https://github.com/gutjei/jellyfin-what-song/releases/download/v{version}/{package.name}",
         "timestamp": datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z"),
         "changelog": sys.argv[1] if len(sys.argv) > 1 else "Plugin update."
     })
 package.write_bytes(content)
-manifest.write_text(json.dumps(catalog, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+(root / "dist" / "manifest.json").write_text(json.dumps(catalog, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 print(f"{package.name}  {checksum}")

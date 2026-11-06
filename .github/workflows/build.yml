@@ -16,10 +16,17 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
       - run: node --test tests/song-pause.test.cjs
+      - run: dotnet test tests/SongPause.Tests.csproj -c Release
       - run: dotnet publish Jellyfin.Plugin.SongPause.csproj -c Release -o dist
+      - run: python tools/package.py
       - uses: actions/upload-artifact@v4
         with:
           name: SongPause
-          path: dist/Jellyfin.Plugin.SongPause.dll
+          path: |
+            dist/SongPause_*.zip
+            dist/manifest.json
           if-no-files-found: error
